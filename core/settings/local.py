@@ -3,7 +3,7 @@ from django.utils.timezone import timedelta
 
 SECRET_KEY = "django-insecure-!%(@k-@#bkw2$gyc(^a!kb&-%d#r3g*_5s-xk#%x8@@%9a%%1v"
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 DATABASES = {
     "default": {
