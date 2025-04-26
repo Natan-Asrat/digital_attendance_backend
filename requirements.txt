@@ -7,3 +7,6 @@ psycopg2-binary==2.9.10
 django-filter==25.1
 django-debug-toolbar==5.1.0
 python-dotenv==1.1.0
+tensorflow==2.19.0
+scikit-learn==1.6.1
+pillow==11.2.1

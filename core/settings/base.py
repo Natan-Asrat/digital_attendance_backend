@@ -14,11 +14,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     ##
-
+    "account",
     ##
     "rest_framework",
     "rest_framework_simplejwt",
     "django_filters",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+AUTH_USER_MODEL = "account.User"
 
 LANGUAGE_CODE = "en-us"
 
@@ -79,3 +81,11 @@ STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Digital Attendance',
+    'SERVE_INCLUDE_SCHEMA': False,  # You can enable this to serve the schema file as well
+}
