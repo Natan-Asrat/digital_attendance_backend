@@ -1,4 +1,3 @@
-from typing import override
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
 from rest_framework import status
@@ -29,7 +28,6 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         },
         description="Create a new user account with email, phone, name, and signature."
     )
-    @override
     def create(self, request, *args, **kwargs):
         """Override the create method to handle custom logic."""
         serializer = UserCreateSerializer(data=request.data)
