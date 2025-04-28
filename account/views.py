@@ -6,8 +6,9 @@ from .serializers import UserCreateSerializer, UserSerializer  # Assuming UserCr
 from rest_framework.decorators import action
 from .utils import calculate_signature_similarity
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, OpenApiExample
-
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from rest_framework import serializers
+from drf_spectacular.utils import inline_serializer
 
 class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
@@ -16,17 +17,30 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         request=UserCreateSerializer,
         responses={
             201: UserSerializer,
-            400: OpenApiExample(
-                'Invalid input',
-                value={
-                    "email": ["This field is required."],
-                    "phone": ["This field is required."],
-                    "name": ["This field is required."],
-                    "signature_base64": ["Invalid base64 signature format. Must start with 'data:image'."]
-                }
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="UserCreateBadRequest",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Error - Invalid input",
+                        description="Invalid input provided",
+                        value={
+                            "email": ["This field is required."],
+                            "phone": ["This field is required."],
+                            "name": ["This field is required."],
+                            "signature_base64": ["Invalid base64 signature format. Must start with 'data:image'."]
+                        }
+                    ),
+                ]
             ),
         },
-        description="Create a new user account with email, phone, name, and signature."
+        description="Create a new user account with email, phone, name, and signature.",
+        tags=["1. Register and login"]
     )
     def create(self, request, *args, **kwargs):
         """Override the create method to handle custom logic."""
@@ -52,13 +66,34 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         },
         responses={
             200: UserSerializer,
-            400: [
-                OpenApiExample('Signature mismatch', value={"error": "Signature mismatch. Please try again!"}),
-                OpenApiExample('Signature invalid', value={"error": "Signature missing or invalid."}),
-            ],
-            404: OpenApiExample('User not found', value={"error": "User not found."}),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="EmailLoginBadRequest",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample('Signature mismatch', value={"error": "Signature mismatch. Please try again!"}),
+                    OpenApiExample('Signature invalid', value={"error": "Signature missing or invalid."}),
+                ]
+            ),
+            404: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="EmailLoginNotFound",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample('User not found', value={"error": "User not found."}),
+                ]
+            ),
         },
-        description="Login using email and base64-encoded signature comparison."
+        description="Login using email and base64-encoded signature comparison.",
+        tags=["1. Register and login"]
     )
     @action(detail=False, methods=['POST'])
     def email_login(self, request, *args, **kwargs):
@@ -107,13 +142,34 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         },
         responses={
             200: UserSerializer,
-            400: [
-                OpenApiExample('Signature mismatch', value={"error": "Signature mismatch. Please try again!"}),
-                OpenApiExample('Signature invalid', value={"error": "Signature missing or invalid."}),
-            ],
-            404: OpenApiExample('User not found', value={"error": "User not found."}),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="PhoneLoginBadRequest",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample('Signature mismatch', value={"error": "Signature mismatch. Please try again!"}),
+                    OpenApiExample('Signature invalid', value={"error": "Signature missing or invalid."}),
+                ]
+            ),
+            404: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="PhoneLoginNotFound",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample('User not found', value={"error": "User not found."}),
+                            ]
+            ),
         },
-        description="Login using phone number and base64-encoded signature comparison."
+        description="Login using phone number and base64-encoded signature comparison.",
+        tags=["1. Register and login"]
     )
     @action(detail=False, methods=['POST'])
     def phone_login(self, request, *args, **kwargs):

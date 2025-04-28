@@ -74,7 +74,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-
+    last_seen = models.DateTimeField(null = True, blank=True)
+    banned_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='banned_users')
+    unbanned_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='unbanned_users')
+    banned_at = models.DateTimeField(null=True, blank=True)
+    unbanned_at = models.DateTimeField(null=True, blank=True)
+    can_create_organizations = models.BooleanField(default=False)
+    granted_organizational_permission_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_organization_permissions')
+    revoked_organizational_permission_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='revoked_organization_permissions')
+    granted_organizational_permission_at = models.DateTimeField(null=True, blank=True)
+    revoked_organizational_permission_at = models.DateTimeField(null=True, blank=True)  
+    can_add_superusers = models.BooleanField(default=False)
+    granted_superuser_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_superuser_status')
+    revoked_superuser_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='revoked_superuser_status')
+    granted_superuser_status_at = models.DateTimeField(null=True, blank=True)
+    revoked_superuser_status_at = models.DateTimeField(null=True, blank=True)
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone']
 
