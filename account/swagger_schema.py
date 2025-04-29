@@ -90,11 +90,11 @@ email_login_schema = extend_schema(
             response=inline_serializer(
                 name="EmailLoginNotFound",
                 fields={
-                    "error": serializers.CharField()
+                    "detail": serializers.CharField()
                 }
             ),
             examples=[
-                OpenApiExample('User not found', value={"error": "User not found."}),
+                OpenApiExample('User not found', value={"detail": "User not found."}),
             ]
         ),
     },
@@ -159,11 +159,11 @@ phone_login_schema = extend_schema(
             response=inline_serializer(
                 name="PhoneLoginNotFound",
                 fields={
-                    "error": serializers.CharField()
+                    "detail": serializers.CharField()
                 }
             ),
             examples=[
-                OpenApiExample('User not found', value={"error": "User not found."}),
+                OpenApiExample('User not found', value={"detail": "User not found."}),
                         ]
         ),
     },

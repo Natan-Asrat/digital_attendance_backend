@@ -6,9 +6,6 @@ from .serializers import UserCreateSerializer, UserSerializer  # Assuming UserCr
 from rest_framework.decorators import action
 from .utils import calculate_signature_similarity
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from rest_framework import serializers
-from drf_spectacular.utils import inline_serializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .swagger_schema import (
     create_schema, email_login_schema, phone_login_schema
@@ -45,7 +42,7 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         # Retrieve the user by email
         user = User.objects.filter(email=email).first()
         if user is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Check the signature similarity
         base64_existing_signature = user.signaturebase64
@@ -81,7 +78,7 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
         # Retrieve the user by phone number
         user = User.objects.filter(phone=phone).first()
         if user is None:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Check the signature similarity
         base64_existing_signature = user.signaturebase64

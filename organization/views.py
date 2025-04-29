@@ -5,21 +5,34 @@ from rest_framework.decorators import action
 from account.models import User
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import serializers
-from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
 from django.utils import timezone
 from rest_framework.permissions import AllowAny
 from .swagger_schema import (
     assign_organization_super_admin_schema, 
     revoke_organization_super_admin_schema, 
-    assign_staff_schema, revoke_staff_schema
+    assign_staff_schema, revoke_staff_schema,
+    create_organization_schema, view_all_organizations_schema,
+    view_active_organizations_schema,
+    view_archived_organizations_schema,
+    archive_organization_schema
 )
+from .serializers import OrganizationCreateSerializer, OrganizationSerializer, OrganizationAdminSerializer
+from .pagination import CustomPageNumberPagination
 
 # Create your views here.
 class OrganizationViewset(GenericViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action in ['view_all_organizations', 'view_active_organizations', 'view_archived_organizations']:
+            return OrganizationAdminSerializer
+        elif self.action == 'create_organization':
+            return OrganizationCreateSerializer
+        return OrganizationSerializer
+
 
     @assign_organization_super_admin_schema
     @action(detail=False, methods=['post'])
@@ -41,7 +54,7 @@ class OrganizationViewset(GenericViewSet):
             assigned_user.save()
             return Response({"message": "User assigned as organizational super admin successfully."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -61,7 +74,7 @@ class OrganizationViewset(GenericViewSet):
             assigned_user.save()
             return Response({"message": "User has been revoked organizational super admin permission successfully."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -72,7 +85,7 @@ class OrganizationViewset(GenericViewSet):
             email = request.data.get('email')
             assigned_user = User.objects.get(email=email)
             if assigned_user.is_superuser:
-                return Response({"error": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"detail": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
             if not assigned_user.is_active:
                 return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
             if assigned_user.revoked_staff_status_at is not None:
@@ -86,7 +99,7 @@ class OrganizationViewset(GenericViewSet):
             assigned_user.save()
             return Response({"message": "User assigned as Staff successfully."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -97,7 +110,7 @@ class OrganizationViewset(GenericViewSet):
             email = request.data.get('email')
             assigned_user = User.objects.get(email=email)
             if assigned_user.is_superuser:
-                return Response({"error": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"detail": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
             if not assigned_user.is_active:
                 return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
             if assigned_user.revoked_staff_status_at is not None:
@@ -109,7 +122,64 @@ class OrganizationViewset(GenericViewSet):
             assigned_user.save()
             return Response({"message": "User has been revoked Staff permissions successfully."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+    @create_organization_schema
+    @action(detail=False, methods=['post'])
+    def create_organization(self, request, *args, **kwargs):
+        serializer = OrganizationCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            organization = serializer.save(created_by=request.user)
+            return Response(OrganizationSerializer(organization).data, status=status.HTTP_201_CREATED)
+        print("errors", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @archive_organization_schema
+    @action(detail=True, methods=['post'])
+    def archive_organization(self, request, pk=None):
+        organization = self.get_object()
+        if not organization.is_active:
+            return Response({"error": "Organization is already archived."}, status=status.HTTP_400_BAD_REQUEST)
+        organization.is_active = False
+        organization.archived_by = request.user
+        organization.archived_at = timezone.now()
+        organization.save()
+        return Response(OrganizationAdminSerializer(organization).data, status=status.HTTP_200_OK)
+
+    @view_all_organizations_schema
+    @action(detail=False, methods=['get'])
+    def view_all_organizations_schema(self, request, *args, **kwargs):
+        organizations = Organization.objects.filter(created_by=request.user).select_related('created_by', 'archived_by')
+        paginated_queryset = self.paginate_queryset(organizations)
+        if paginated_queryset is not None:
+            serializer = self.get_serializer(paginated_queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(organizations, many=True)
+        return Response(serializer.data)
+
+    @view_active_organizations_schema
+    @action(detail=False, methods=['get'])
+    def view_active_organizations(self, request, *args, **kwargs):
+        organizations = Organization.objects.filter(created_by=request.user, is_active=True).select_related('created_by', 'archived_by')
+        paginated_queryset = self.paginate_queryset(organizations)
+        if paginated_queryset is not None:
+            serializer = self.get_serializer(paginated_queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(organizations, many=True)
+        return Response(serializer.data)
+
+    @view_archived_organizations_schema
+    @action(detail=False, methods=['get'])
+    def view_archived_organizations(self, request, *args, **kwargs):
+        organizations = Organization.objects.filter(created_by=request.user, is_active=False).select_related('created_by', 'archived_by')
+        paginated_queryset = self.paginate_queryset(organizations)
+        if paginated_queryset is not None:
+            serializer = self.get_serializer(paginated_queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(organizations, many=True)
+        return Response(serializer.data)

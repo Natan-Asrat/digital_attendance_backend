@@ -97,9 +97,14 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,  # You can enable this to serve the schema file as well
     'TAGS': [
         {"name": "1. Register and login"},
-        {"name": "2. Assign/Revoke Staff"},
-        {"name": "3. Assign/Revoke Organizational Super Admin"},
+        {"name": "2. Assign/Revoke Staff (by Staff)"},
+        {"name": "3. Assign/Revoke Organizational Super Admin (by Staff)"},
+        {"name": "4. Create/View Organization (by Organizational Super Admin)"},
+        {"name": "5. Archive Organization (by Staff)"},
     ],
+    'SWAGGER_UI_SETTINGS': {
+        'docExpansion': 'none',  # Collapses all sections by default
+    },
 }
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
