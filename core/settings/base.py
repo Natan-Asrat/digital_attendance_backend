@@ -95,4 +95,9 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Digital Attendance',
     'SERVE_INCLUDE_SCHEMA': False,  # You can enable this to serve the schema file as well
+    'TAGS': [
+        {"name": "1. Register and login"},
+        {"name": "2. Assign/Revoke Staff"},
+        {"name": "3. Assign/Revoke Organizational Super Admin"},
+    ],
 }

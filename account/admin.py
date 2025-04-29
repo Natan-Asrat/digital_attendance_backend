@@ -14,7 +14,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'phone', 'name', 'signaturebase64', 'signaturejson')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'can_create_organizations')}),
         ('Important dates', {'fields': ('date_joined',)}),
-        ('Logs', {'fields': ('last_seen', 'banned_by', 'unbanned_by', 'banned_at', 'unbanned_at', 'granted_organizational_permission_by', 'revoked_organizational_permission_by', 'granted_organizational_permission_at', 'revoked_organizational_permission_at', 'granted_superuser_status_by', 'revoked_superuser_status_by', 'granted_superuser_status_at', 'revoked_superuser_status_at')}),
+        ('Logs', {'fields': ('last_seen', 'banned_by', 'unbanned_by', 'banned_at', 'unbanned_at', 'granted_organizational_permission_by', 'revoked_organizational_permission_by', 'granted_organizational_permission_at', 'revoked_organizational_permission_at', 'granted_staff_status_by', 'revoked_staff_status_by', 'granted_staff_status_at', 'revoked_staff_status_at')}),
     )
     add_fieldsets = (
         (None, {

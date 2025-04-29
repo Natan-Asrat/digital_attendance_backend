@@ -84,11 +84,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     revoked_organizational_permission_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='revoked_organization_permissions')
     granted_organizational_permission_at = models.DateTimeField(null=True, blank=True)
     revoked_organizational_permission_at = models.DateTimeField(null=True, blank=True)  
-    can_add_superusers = models.BooleanField(default=False)
-    granted_superuser_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_superuser_status')
-    revoked_superuser_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='revoked_superuser_status')
-    granted_superuser_status_at = models.DateTimeField(null=True, blank=True)
-    revoked_superuser_status_at = models.DateTimeField(null=True, blank=True)
+    can_add_staff = models.BooleanField(default=False)
+    can_revoke_staff = models.BooleanField(default=False)
+    granted_staff_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='granted_superuser_status')
+    revoked_staff_status_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='revoked_superuser_status')
+    granted_staff_status_at = models.DateTimeField(null=True, blank=True)
+    revoked_staff_status_at = models.DateTimeField(null=True, blank=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone']

@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework import serializers
 from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
 from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied
+
 # Create your views here.
 class OrganizationViewset(GenericViewSet):
     serializer_class = OrganizationSerializer
@@ -124,7 +126,7 @@ class OrganizationViewset(GenericViewSet):
         },
         description="Assign a user as an organizational super admin if the user is active, hasn't been revoked permission, and hasn't already been granted permission.",
         summary="Assign Organization Super Admin",
-        tags=["2. Assign/Revoke Organizational Super Admin"]
+        tags=["3. Assign/Revoke Organizational Super Admin"]
     )
     @action(detail=False, methods=['post'])
     def assign_organization_super_admin(self, request, *args, **kwargs):
@@ -156,7 +158,7 @@ class OrganizationViewset(GenericViewSet):
                     'email': {
                         'type': 'string',
                         'format': 'email',
-                        'description': 'Email of the user to assign as organization super admin.'
+                        'description': 'Email of the user to revoke organization super admin permissions from.'
                     }
                 },
                 'required': ['email'],
@@ -224,7 +226,7 @@ class OrganizationViewset(GenericViewSet):
         },
         description="Revoke a user's organizational super admin permission if they are active and haven't already been revoked.",
         summary="Revoke Organization Super Admin",
-        tags=["2. Assign/Revoke Organizational Super Admin"]
+        tags=["3. Assign/Revoke Organizational Super Admin"]
     )
 
     @action(detail=False, methods=['post'])
@@ -245,3 +247,241 @@ class OrganizationViewset(GenericViewSet):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @extend_schema(
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'email': {
+                        'type': 'string',
+                        'format': 'email',
+                        'description': 'Email of the user to assign as staff.'
+                    }
+                },
+                'required': ['email'],
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                description="Success",
+                response=inline_serializer(
+                    name="AssignStaffSuccess",
+                    fields={
+                        "message": serializers.CharField(
+                            help_text="User assigned as Staff successfully."
+                        )
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={"message": "User assigned as Staff successfully."},
+                        response_only=True
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="AssignStaffBadRequest",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Error - User is banned",
+                        description="User is banned",
+                        value={"error": "User is banned."},
+                        response_only=True
+                    ),
+                    OpenApiExample(
+                        name="Error - User revoked permissions",
+                        description="User has been revoked from Staff permission",
+                        value={"error": "User has been revoked Staff permission."},
+                        response_only=True
+                    ),
+                    OpenApiExample(
+                        name="Error - User already has permission",
+                        description="User has already been granted permission",
+                        value={"error": "User has already been granted Staff permission."},
+                        response_only=True
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description="Trying to change a superuser account: Forbidden.",
+                response=inline_serializer(
+                    name="AssignStaffForbidden",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[OpenApiExample(
+                    name="Error - Forbidden",
+                    value={"error": "You are not allowed to alter this account"},
+                    response_only=True
+                )]
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=inline_serializer(
+                    name="AssignStaffNotFound",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Error - User not found",
+                        description="User not found",
+                        value={"error": "User not found."},
+                        response_only=True
+                    )
+                ]
+            )
+        },
+        description="Assign a user as Staff if the user is active, hasn't been revoked permission, and hasn't already been granted permission.",
+        summary="Assign Staff",
+        tags=["2. Assign/Revoke Staff"]
+    )
+    @action(detail=False, methods=['post'])
+    def assign_staff(self, request, *args, **kwargs):
+        try:
+            email = request.data.get('email')
+            assigned_user = User.objects.get(email=email)
+            if assigned_user.is_superuser:
+                return Response({"error": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
+            if not assigned_user.is_active:
+                return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
+            if assigned_user.revoked_staff_status_at is not None:
+                return Response({"error": "User has been revoked from Staff permission."}, status=status.HTTP_400_BAD_REQUEST)
+            if assigned_user.is_staff or assigned_user.granted_staff_status_at is not None:
+                return Response({"error": "User has already been granted Staff permission."}, status=status.HTTP_400_BAD_REQUEST)
+
+            assigned_user.is_staff = True
+            assigned_user.granted_staff_status_by = request.user
+            assigned_user.granted_staff_status_at = timezone.now()
+            assigned_user.save()
+            return Response({"message": "User assigned as Staff successfully."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @extend_schema(
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'email': {
+                        'type': 'string',
+                        'format': 'email',
+                        'description': 'Email of the user to revoke Staff permissions from.'
+                    }
+                },
+                'required': ['email'],
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                description="Success",
+                response=inline_serializer(
+                    name="RevokeStaffSuccess",
+                    fields={
+                        "message": serializers.CharField(
+                            help_text="User has been revoked Staff permissions successfully."
+                        )
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={"message": "User has been revoked Staff permissions successfully."},
+                        response_only=True
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=inline_serializer(
+                    name="RevokeStaffBadRequest",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Error - User is banned",
+                        description="User is banned",
+                        value={"error": "User is banned."},
+                        response_only=True
+                    ),
+                    OpenApiExample(
+                        name="Error - User already revoked",
+                        description="User has already been revoked Staff permissions.",
+                        value={"error": "User has already been revoked Staff permissions."},
+                        response_only=True
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description="Trying to change a superuser account: Forbidden.",
+                response=inline_serializer(
+                    name="RevokeStaffForbidden",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[OpenApiExample(
+                    name="Error - Forbidden",
+                    value={"error": "You are not allowed to alter this account"},
+                    response_only=True
+                )]
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=inline_serializer(
+                    name="RevokeStaffNotFound",
+                    fields={
+                        "error": serializers.CharField()
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Error - User not found",
+                        description="User not found",
+                        value={"error": "User not found."},
+                        response_only=True
+                    )
+                ]
+            )
+        },
+        description="Revoke a user's Staff permission if they are active and haven't already been revoked.",
+        summary="Revoke Staff",
+        tags=["2. Assign/Revoke Staff"]
+    )
+
+    @action(detail=False, methods=['post'])
+    def revoke_staff(self, request, *args, **kwargs):
+        try:
+            email = request.data.get('email')
+            assigned_user = User.objects.get(email=email)
+            if assigned_user.is_superuser:
+                return Response({"error": "You are not allowed to alter this account"}, status=status.HTTP_403_FORBIDDEN)
+            if not assigned_user.is_active:
+                return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
+            if assigned_user.revoked_staff_status_at is not None:
+                return Response({"error": "User has already been revoked Staff permissions."}, status=status.HTTP_400_BAD_REQUEST)
+
+            assigned_user.is_staff = False
+            assigned_user.revoked_staff_status_by = request.user
+            assigned_user.revoked_staff_status_at = timezone.now()
+            assigned_user.save()
+            return Response({"message": "User has been revoked Staff permissions successfully."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
