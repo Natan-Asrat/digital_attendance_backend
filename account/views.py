@@ -71,7 +71,33 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
             }
         },
         responses={
-            200: UserSerializer,
+            200: OpenApiResponse(
+                description="Success",
+                response=inline_serializer(
+                    name="RegisterSuccess",
+                    fields={
+                        "message": serializers.CharField(
+                            help_text="Returns access and refresh token."
+                        )
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={
+                            "user": {
+                                "id": 1,
+                                "name": "john doe",
+                                "phone": "111",
+                                "email": "john@example.com"
+                            },
+                            "access_token": "abcd...",
+                            "refresh_token": "efgh...",
+                        },
+                        response_only=True
+                    )
+                ]
+            ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=inline_serializer(
@@ -147,7 +173,33 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
             }
         },
         responses={
-            200: UserSerializer,
+            200: OpenApiResponse(
+                description="Success",
+                response=inline_serializer(
+                    name="RegisterSuccess",
+                    fields={
+                        "message": serializers.CharField(
+                            help_text="Returns access and refresh token."
+                        )
+                    }
+                ),
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={
+                            "user": {
+                                "id": 1,
+                                "name": "john doe",
+                                "phone": "111",
+                                "email": "john@example.com"
+                            },
+                            "access_token": "abcd...",
+                            "refresh_token": "efgh...",
+                        },
+                        response_only=True
+                    )
+                ]
+            ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=inline_serializer(
