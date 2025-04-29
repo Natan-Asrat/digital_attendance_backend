@@ -101,3 +101,5 @@ SPECTACULAR_SETTINGS = {
         {"name": "3. Assign/Revoke Organizational Super Admin"},
     ],
 }
+
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
