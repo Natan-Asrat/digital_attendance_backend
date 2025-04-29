@@ -8,13 +8,14 @@ from rest_framework import status
 from rest_framework import serializers
 from drf_spectacular.utils import OpenApiResponse, extend_schema, OpenApiExample, inline_serializer
 from django.utils import timezone
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny
 
 # Create your views here.
 class OrganizationViewset(GenericViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
-    
+    permission_classes = [AllowAny]
+
     @extend_schema(
         request={
             'application/json': {

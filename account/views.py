@@ -9,10 +9,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from rest_framework import serializers
 from drf_spectacular.utils import inline_serializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    def get_permissions(self):
+        if self.action in ['create', 'email_login', 'phone_login']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     @extend_schema(
         request=UserCreateSerializer,
         responses={
