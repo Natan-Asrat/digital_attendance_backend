@@ -18,13 +18,13 @@ class OrganizationViewset(GenericViewSet):
             'application/json': {
                 'type': 'object',
                 'properties': {
-                    'user_id': {
+                    'email': {
                         'type': 'string',
-                        'format': 'uuid',
-                        'description': 'The ID of the user to assign as organization super admin.'
+                        'format': 'email',
+                        'description': 'Email of the user to assign as organization super admin.'
                     }
                 },
-                'required': ['user_id'],
+                'required': ['email'],
             }
         },
         responses={
@@ -129,10 +129,8 @@ class OrganizationViewset(GenericViewSet):
     @action(detail=False, methods=['post'])
     def assign_organization_super_admin(self, request, *args, **kwargs):
         try:
-            user_id = request.data.get('user_id')
-            print("user", user_id)
-            assigned_user = User.objects.get(id=user_id)
-            print("got", assigned_user)
+            email = request.data.get('email')
+            assigned_user = User.objects.get(email=email)
             if not assigned_user.is_active:
                 return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
             if assigned_user.revoked_organizational_permission_at is not None:
@@ -155,13 +153,13 @@ class OrganizationViewset(GenericViewSet):
             'application/json': {
                 'type': 'object',
                 'properties': {
-                    'user_id': {
+                    'email': {
                         'type': 'string',
-                        'format': 'uuid',
-                        'description': 'The ID of the user to revoke organization super admin permission from.'
+                        'format': 'email',
+                        'description': 'Email of the user to assign as organization super admin.'
                     }
                 },
-                'required': ['user_id'],
+                'required': ['email'],
             }
         },
         responses={
@@ -232,8 +230,8 @@ class OrganizationViewset(GenericViewSet):
     @action(detail=False, methods=['post'])
     def revoke_organization_super_admin(self, request, *args, **kwargs):
         try:
-            user_id = request.data.get('user_id')
-            assigned_user = User.objects.get(id=user_id)
+            email = request.data.get('email')
+            assigned_user = User.objects.get(email=email)
             if not assigned_user.is_active:
                 return Response({"error": "User is banned."}, status=status.HTTP_400_BAD_REQUEST)
             if assigned_user.revoked_organizational_permission_at is not None:
