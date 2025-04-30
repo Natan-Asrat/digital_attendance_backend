@@ -101,6 +101,9 @@ SPECTACULAR_SETTINGS = {
         {"name": "3. Assign/Revoke Organizational Super Admin (by Staff)"},
         {"name": "4. Create/View Organization (by Organizational Super Admin)"},
         {"name": "5. Archive Organization (by Staff)"},
+        {"name": "6. Assign/Revoke Organizational Admin (by Organizational Super Admin & Organizational Admin)"},
+        {"name": "7. View Organizational Admins in a specific Organization (by Organizational Super Admin & Organizational Admin)"},
+        {"name": "8. Update Organizational Admin (by Organizational Super Admin)"},
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default

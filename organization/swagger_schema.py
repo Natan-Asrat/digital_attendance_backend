@@ -1,5 +1,6 @@
-from drf_spectacular.utils import OpenApiResponse, OpenApiExample, inline_serializer, extend_schema
+from drf_spectacular.utils import OpenApiResponse, OpenApiExample, OpenApiParameter, inline_serializer, extend_schema
 from rest_framework import serializers
+from organization.serializers import OrganizationalAdmin_AdminSerializer, OrganizationAdminSerializer
 
 # 2
 assign_staff_schema = extend_schema(
@@ -536,6 +537,47 @@ view_archived_organizations_schema = extend_schema(
     tags=["4. Create/View Organization (by Organizational Super Admin)"],
 )
 
+get_user_organizations_schema = extend_schema(
+    methods=["GET"],
+    parameters=[
+        OpenApiParameter(
+            name="email",
+            description="Email address of the user to filter organizations by.",
+            required=True,
+            type=str,
+            location=OpenApiParameter.QUERY
+        )
+    ],
+    responses={
+        200: OrganizationAdminSerializer(many=True),
+        404: OpenApiResponse(
+            description="GetUserOrganizationsNotFound",
+            response=inline_serializer(
+                name="GetUserOrganizationsNotFound",
+                fields={"error": serializers.CharField()},
+            ),
+            examples=[
+                OpenApiExample(
+                    name="User not found",
+                    description="User not found.",
+                    value={"error": "User not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+                OpenApiExample(
+                    name="Organization not found",
+                    description="Organization not found.",
+                    value={"error": "Organization not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+            ]
+        ),
+    },
+    description="Returns a list of organizations created by the user with the given email.",
+    tags=["4. Create/View Organization (by Organizational Super Admin)"],
+)
+
 # 5
 archive_organization_schema = extend_schema(
     summary="Archive an Organization",
@@ -590,4 +632,407 @@ archive_organization_schema = extend_schema(
             fields={"detail": serializers.CharField(default="No Organization matches the given query.")}
         ),
     }
+)
+
+
+# 6
+assign_organization_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email" : {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to assign as organizational admin.'
+                },
+                "role" : {
+                    'type': 'string',
+                    'description': 'Role of the user (Optional - default: Admin).'
+                },
+                "can_add_another_admin" : {
+                    'type': 'boolean',
+                    'description': 'Can add another admin (Optional - default: False).'
+                },
+                "can_archive_organization" : {
+                    'type': 'boolean',
+                    'description': 'Can archive organization (Optional - default: False).'
+                },
+                "can_change_attendance_validity" : {
+                    'type': 'boolean',
+                    'description': 'Can change attendance validity (Optional - default: False).'
+                },
+                "can_create_programs" : {
+                    'type': 'boolean',
+                    'description': 'Can create programs (Optional - default: False).'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=OrganizationalAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="AssignOrganizationAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Organization archived",
+                    description="The organization is archived.",
+                    value={"error": "Organization is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be assigned.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Revoked",
+                    description="The user has been revoked as organizational admin.",
+                    value={"error": "User has been revoked as organizational admin."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Already assigned",
+                    description="The user is already an active organizational admin.",
+                    value={"error": "User is already assigned as organizational admin."},
+                    response_only=True
+                )
+            ]
+        ),
+        403: OpenApiResponse(
+            description="Forbidden",
+            response=inline_serializer(
+                name="AssignOrganizationAdminForbidden",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Forbidden",
+                    description="The user is not authorized to perform this action.",
+                    value={"detail": "You do not have permission to perform this action."},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="AssignOrganizationAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Organization not found",
+                    description="No organization found with the given id.",
+                    value={"detail": "Organization not found."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Assign User to be an Organizational Admin in a specific Organization.",
+    description="Assigns a user as an organizational admin if the user is active, hasn't been revoked permission, and hasn't already been granted permission.",
+    tags=["6. Assign/Revoke Organizational Admin (by Organizational Super Admin & Organizational Admin)"]
+)
+
+
+revoke_organization_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email" : {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to revoke as organizational admin.'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=OrganizationalAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="RevokeOrganizationAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Organization archived",
+                    description="The organization is archived.",
+                    value={"error": "Organization is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be revoked.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Revoked",
+                    description="The user has already been revoked as organizational admin.",
+                    value={"error": "User has already been revoked as organizational admin."},
+                    response_only=True
+                )
+            ]
+        ),
+        403: OpenApiResponse(
+            description="Forbidden",
+            response=inline_serializer(
+                name="RevokeOrganizationAdminForbidden",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Forbidden",
+                    description="The user is not authorized to perform this action.",
+                    value={"detail": "You do not have permission to perform this action."},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="RevokeOrganizationAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Organization not found",
+                    description="No organization found with the given id.",
+                    value={"detail": "Organization not found."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Revoke User as an Organizational Admin from a specific Organization.",
+    description="Revokes a user as an organizational admin if the user is active, and hasn't already been revoked permission.",
+    tags=["6. Assign/Revoke Organizational Admin (by Organizational Super Admin & Organizational Admin)"]
+)
+
+# 7
+
+get_all_organizational_admins_schema = extend_schema(
+    responses=inline_serializer(
+        name="ViewAllOrganizationalAdminsInOrganization",
+        fields={
+            "count": serializers.IntegerField(),
+            "next": serializers.CharField(allow_null=True),
+            "previous": serializers.CharField(allow_null=True),
+            "results": OrganizationalAdmin_AdminSerializer(many=True)
+        }
+    ),
+    summary="View All Organizational Admins in a specific Organization.",
+    description="Retrieves a paginated list of all organizational admins in a specific organization.",
+    tags=["7. View Organizational Admins in a specific Organization (by Organizational Super Admin & Organizational Admin)"],
+)
+get_user_organizational_admins_schema = extend_schema(
+    methods=["GET"],
+    parameters=[
+        OpenApiParameter(
+            name="email",
+            description="Email address of the user to filter organizations by.",
+            required=True,
+            type=str,
+            location=OpenApiParameter.QUERY
+        )
+    ],
+    responses={
+        200: OrganizationalAdmin_AdminSerializer(many=True),
+        404: OpenApiResponse(
+            description="GetUserOrganizationalAdminNotFound",
+            response=inline_serializer(
+                name="GetUserOrganizationalAdminNotFound",
+                fields={"error": serializers.CharField()},
+            ),
+            examples=[
+                OpenApiExample(
+                    name="User not Assigned as Organizational Admin",
+                    description="User not assigned as organizational admin.",
+                    value={"error": "User not assigned as organizational admin."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+                OpenApiExample(
+                    name="User not found",
+                    description="User not found.",
+                    value={"error": "User not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+                OpenApiExample(
+                    name="Organization not found",
+                    description="Organization not found.",
+                    value={"error": "Organization not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+            ]
+        ),
+    },
+    description="Retrieves the data of the user assigned as organizational admin in a specific organization.",
+    tags=["7. View Organizational Admins in a specific Organization (by Organizational Super Admin & Organizational Admin)"],
+)
+
+#8
+
+update_organization_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email" : {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to assign as organizational admin.'
+                },
+                "role" : {
+                    'type': 'string',
+                    'description': 'Role of the user (Optional - default: Admin).'
+                },
+                "can_add_another_admin" : {
+                    'type': 'boolean',
+                    'description': 'Can add another admin (Optional - default: False).'
+                },
+                "can_archive_organization" : {
+                    'type': 'boolean',
+                    'description': 'Can archive organization (Optional - default: False).'
+                },
+                "can_change_attendance_validity" : {
+                    'type': 'boolean',
+                    'description': 'Can change attendance validity (Optional - default: False).'
+                },
+                "can_create_programs" : {
+                    'type': 'boolean',
+                    'description': 'Can create programs (Optional - default: False).'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=OrganizationalAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="UpdateOrganizationAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Organization archived",
+                    description="The organization is archived.",
+                    value={"error": "Organization is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Email is required",
+                    description="The email is required to identify the admin.",
+                    value={"error": "Email is required to identify the admin."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be assigned.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Revoked",
+                    description="The user has been revoked as organizational admin.",
+                    value={"error": "User has been revoked as organizational admin."},
+                    response_only=True
+                ),
+            ]
+        ),
+        403: OpenApiResponse(
+            description="Forbidden",
+            response=inline_serializer(
+                name="UpdateOrganizationAdminForbidden",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Forbidden",
+                    description="The user is not authorized to perform this action.",
+                    value={"detail": "You do not have permission to perform this action."},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="UpdateOrganizationAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Organization not found",
+                    description="No organization found with the given id.",
+                    value={"detail": "Organization not found."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Update User as an Organizational Admin in a specific Organization.",
+    description="Updates a user as an organizational admin if the user is active, and hasn't been revoked permission. Only send what you need to change since this is a PATCH request.",
+    tags=["8. Update Organizational Admin (by Organizational Super Admin)"]
 )
