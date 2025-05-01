@@ -112,7 +112,10 @@ SPECTACULAR_SETTINGS = {
         {"name": "12. View/Leave Associated Programs (by other Organizational Super Admin & other Organizational Admin)"},
         {"name": "13. Subscribe/Unsubscribe/View to Program (by User)"},
         {"name": "14. Subscribers in Program (by O. S. Admins, O. Admins, Event Admins & Event Organizers with permission)"},
-        {"name": "15. Subscribed Programs of a User (by Staff)"}
+        {"name": "15. Subscribed Programs of a User (by Staff)"},
+        {"name": "16. Assign/Revoke Program Event Admin (by Organizational Admin & Organizational Super Admin)"},
+        {"name": "17. View Program Event Admins in a specific Program (by Program Admin & Organizational Admin & Organizational Super Admin)"},
+        {"name": "18. Update Program Event Admin (by Organizational Admin & Organizational Super Admin)"}
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default

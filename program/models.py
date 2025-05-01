@@ -60,21 +60,32 @@ class ProgramSubscriber(models.Model):
     def __str__(self):
         return f"User: {self.subscriber.name} Subscribed to program {self.program.name} at {self.subscribed_at}"
 
-class EventAdmin(models.Model):
+class ProgramEventAdmin(models.Model):
+    ROLE_DEFAULT = 'Admin'
+    CAN_ADD_ANOTHER_ADMIN = False
+    CAN_ARCHIVE_PROGRAM = False
+    CAN_ARCHIVE_EVENT = False
+    CAN_ADD_EVENT_ORGANIZER = True
+    CAN_REMOVE_EVENT_ORGANIZER_FROM_PROGRAM = False
+    CAN_CHANGE_ATTENDANCE_VALIDITY = False
+    CAN_CHANGE_ATTENDANCE_VALIDITY = False
+    CAN_CREATE_EVENTS = True
+    CAN_CONCLUDE_EVENTS = True
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('account.User', on_delete=models.CASCADE, related_name='event_admin_roles')
     program = models.ForeignKey('program.Program', on_delete=models.CASCADE, related_name='event_admins')
-    role = models.CharField(max_length=255)
+    role = models.CharField(max_length=100, default=ROLE_DEFAULT)
     is_active = models.BooleanField(default=True)
     is_program_super_admin = models.BooleanField(default=False)
-    can_add_another_admin = models.BooleanField(default=False)
-    can_archive_program = models.BooleanField(default=False)
-    can_archive_event = models.BooleanField(default=False)
-    can_add_event_organizer = models.BooleanField(default=True)
-    can_remove_event_organizer_from_program = models.BooleanField(default=False)
-    can_change_attendance_validity = models.BooleanField(default=False)
-    can_create_events = models.BooleanField(default=True)
-    can_conclude_events = models.BooleanField(default=True)
+    can_add_another_admin = models.BooleanField(default=CAN_ADD_ANOTHER_ADMIN)
+    can_archive_program = models.BooleanField(default=CAN_ARCHIVE_PROGRAM)
+    can_archive_event = models.BooleanField(default=CAN_ARCHIVE_EVENT)
+    can_add_event_organizer = models.BooleanField(default=CAN_ADD_EVENT_ORGANIZER)
+    can_remove_event_organizer_from_program = models.BooleanField(default=CAN_REMOVE_EVENT_ORGANIZER_FROM_PROGRAM)
+    can_change_attendance_validity = models.BooleanField(default=CAN_CHANGE_ATTENDANCE_VALIDITY)
+    can_create_events = models.BooleanField(default=CAN_CREATE_EVENTS)
+    can_conclude_events = models.BooleanField(default=CAN_CONCLUDE_EVENTS)
     added_by = models.ForeignKey('account.User', on_delete=models.CASCADE, related_name='added_event_admins')
     removed_by = models.ForeignKey('account.User', on_delete=models.CASCADE, null=True, blank=True, related_name='removed_event_admins')
     added_at = models.DateTimeField(auto_now_add=True)

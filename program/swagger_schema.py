@@ -6,7 +6,10 @@ from .serializers import (
     ProgramInviteSerializer,
     InvitedOrganizationProgramSerializer,
     ProgramSubscriberGetSubsSerializer,
-    ProgramSubscriberGetProgsSerializer
+    ProgramSubscriberGetProgsSerializer,
+    ProgramEventAdmin_AdminSerializer,
+    AssignProgramEventAdminSerializer,
+    PatchProgramEventAdminSerializer
 )
 
 from rest_framework import serializers
@@ -485,6 +488,8 @@ list_subscribers_in_program_schema = extend_schema(
     }
 )
 
+# 15
+
 list_subscribed_programs_schema = extend_schema(
     summary="List Subscribed Programs of a User",
     description="Returns a paginated list of active programs a specific user has subscribed to.",
@@ -495,4 +500,403 @@ list_subscribed_programs_schema = extend_schema(
             response=ProgramSubscriberGetProgsSerializer(many=True)
         )
     }
+)
+
+
+# 16 
+assign_program_event_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to assign as program event admin.'
+                },
+                "role": {
+                    'type': 'string',
+                    'description': 'Role of the user (Optional - default: Admin).'
+                },
+                "can_add_another_admin": {
+                    'type': 'boolean',
+                    'description': 'Can add another admin (Optional - default: False).'
+                },
+                "can_archive_program": {
+                    'type': 'boolean',
+                    'description': 'Can archive program (Optional - default: False).'
+                },
+                "can_archive_event": {
+                    'type': 'boolean',
+                    'description': 'Can archive event (Optional - default: False).'
+                },
+                "can_add_event_organizer": {
+                    'type': 'boolean',
+                    'description': 'Can add event organizer (Optional - default: False).'
+                },
+                "can_remove_event_organizer_from_program": {
+                    'type': 'boolean',
+                    'description': 'Can remove event organizer from program (Optional - default: False).'
+                },
+                "can_change_attendance_validity": {
+                    'type': 'boolean',
+                    'description': 'Can change attendance validity (Optional - default: False).'
+                },
+                "can_create_events": {
+                    'type': 'boolean',
+                    'description': 'Can create events (Optional - default: False).'
+                },
+                "can_conclude_events": {
+                    'type': 'boolean',
+                    'description': 'Can conclude events (Optional - default: False).'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=ProgramEventAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="AssignProgramEventAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Program archived",
+                    description="The program is archived.",
+                    value={"error": "Program is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be assigned.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Revoked",
+                    description="The user has been revoked as program admin.",
+                    value={"error": "User has been revoked as program admin."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Already assigned",
+                    description="The user is already an active program admin.",
+                    value={"error": "User is already assigned as program admin."},
+                    response_only=True
+                ),
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="AssignProgramEventAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Program not found",
+                    description="No program found with the given id.",
+                    value={"detail": "Program not found."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Assign User to be a Program Event Admin in a specific Program.",
+    description="Assigns a user as a program event admin if the user is active, hasn't been revoked permission, and hasn't already been granted permission.",
+    tags=["16. Assign/Revoke Program Event Admin (by Organizational Admin & Organizational Super Admin)"]
+)
+
+revoke_program_event_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to revoke as program event admin.'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=ProgramEventAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="RevokeProgramEventAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Program archived",
+                    description="The program is archived.",
+                    value={"error": "Program is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be revoked.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Already revoked",
+                    description="The user has already been revoked as program admin.",
+                    value={"error": "User has already been revoked as program admin."},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="RevokeProgramEventAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Program not found",
+                    description="No program found with the given id.",
+                    value={"detail": "Program not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Program admin not assigned",
+                    description="No program admin found for the given user in this program.",
+                    value={"detail": "Program admin not assigned."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Revoke User as a Program Event Admin from a specific Program.",
+    description="Revokes a user as a program event admin if the user is active, and hasn't already been revoked permission.",
+    tags=["16. Assign/Revoke Program Event Admin (by Organizational Admin & Organizational Super Admin)"]
+)
+
+
+
+# 17
+
+get_all_program_event_admins_schema = extend_schema(
+    responses=inline_serializer(
+        name="ViewAllProgramEventAdminsInProgram",
+        fields={
+            "count": serializers.IntegerField(),
+            "next": serializers.CharField(allow_null=True),
+            "previous": serializers.CharField(allow_null=True),
+            "results": ProgramEventAdmin_AdminSerializer(many=True)
+        }
+    ),
+    summary="View All Program Event Admins in a specific Program.",
+    description="Retrieves a paginated list of all program event admins in a specific program.",
+    tags=["17. View Program Event Admins in a specific Program (by Program Admin & Organizational Admin & Organizational Super Admin)"]
+)
+
+get_user_program_event_admins_schema = extend_schema(
+    methods=["GET"],
+    parameters=[
+        OpenApiParameter(
+            name="email",
+            description="Email address of the user to filter program admins by.",
+            required=True,
+            type=str,
+            location=OpenApiParameter.QUERY
+        )
+    ],
+    responses={
+        200: ProgramEventAdmin_AdminSerializer(),
+        404: OpenApiResponse(
+            description="GetUserProgramEventAdminNotFound",
+            response=inline_serializer(
+                name="GetUserProgramEventAdminNotFound",
+                fields={"detail": serializers.CharField()},
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Program Admin not Assigned",
+                    description="User not assigned as program admin in this program.",
+                    value={"detail": "User is not assigned as program admin in this organization."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+                OpenApiExample(
+                    name="User not found",
+                    description="User not found.",
+                    value={"detail": "User not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+                OpenApiExample(
+                    name="Program not found",
+                    description="Program not found.",
+                    value={"detail": "Program not found."},
+                    response_only=True,
+                    status_codes=["404"]
+                ),
+            ]
+        ),
+    },
+    description="Retrieves the data of the user assigned as program event admin in a specific program.",
+    summary="View a specific Program Event Admin in a specific Program by providing email (faster retrieval).",
+    tags=["17. View Program Event Admins in a specific Program (by Program Admin & Organizational Admin & Organizational Super Admin)"]
+)
+
+# 18
+
+update_program_event_admin_schema = extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    'type': 'string',
+                    'format': 'email',
+                    'description': 'Email of the user to update as program event admin.'
+                },
+                "role": {
+                    'type': 'string',
+                    'description': 'Role of the user (Optional).'
+                },
+                "can_add_another_admin": {
+                    'type': 'boolean',
+                    'description': 'Can add another admin (Optional).'
+                },
+                "can_archive_program": {
+                    'type': 'boolean',
+                    'description': 'Can archive program (Optional).'
+                },
+                "can_archive_event": {
+                    'type': 'boolean',
+                    'description': 'Can archive event (Optional).'
+                },
+                "can_add_event_organizer": {
+                    'type': 'boolean',
+                    'description': 'Can add event organizer (Optional).'
+                },
+                "can_remove_event_organizer_from_program": {
+                    'type': 'boolean',
+                    'description': 'Can remove event organizer from program (Optional).'
+                },
+                "can_change_attendance_validity": {
+                    'type': 'boolean',
+                    'description': 'Can change attendance validity (Optional).'
+                },
+                "can_create_events": {
+                    'type': 'boolean',
+                    'description': 'Can create events (Optional).'
+                },
+                "can_conclude_events": {
+                    'type': 'boolean',
+                    'description': 'Can conclude events (Optional).'
+                }
+            },
+            "required": ['email']
+        }
+    },
+    responses={
+        200: OpenApiResponse(
+            description="Success",
+            response=ProgramEventAdmin_AdminSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="UpdateProgramEventAdminBadRequest",
+                fields={
+                    "error": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - Program archived",
+                    description="The program is archived.",
+                    value={"error": "Program is archived."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Email is required",
+                    description="The email is required to identify the admin.",
+                    value={"error": "Email is required to identify the admin."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - User is banned",
+                    description="The user is banned and cannot be updated.",
+                    value={"error": "User is banned."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Revoked",
+                    description="The user has been revoked as program admin.",
+                    value={"error": "User has been revoked as program admin."},
+                    response_only=True
+                ),
+            ]
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=inline_serializer(
+                name="UpdateProgramEventAdminNotFound",
+                fields={
+                    "detail": serializers.CharField()
+                }
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Error - User not found",
+                    description="No user found with the given email.",
+                    value={"detail": "User not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Program not found",
+                    description="No program found with the given id.",
+                    value={"detail": "Program not found."},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    name="Error - Program admin not assigned",
+                    description="No program admin found for the given user in this program.",
+                    value={"detail": "Program admin not assigned."},
+                    response_only=True
+                )
+            ]
+        ),
+    },
+    summary="Update User as a Program Event Admin in a specific Program.",
+    description="Updates a user's program event admin permissions if the user is active and hasn't been revoked permission. Only send the fields you need to change since this is a PATCH request.",
+    tags=["18. Update Program Event Admin (by Organizational Admin & Organizational Super Admin)"]
 )
