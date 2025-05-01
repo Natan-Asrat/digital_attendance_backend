@@ -108,7 +108,8 @@ SPECTACULAR_SETTINGS = {
         {"name": "8. Update Organizational Admin (by Organizational Super Admin)"},
         {"name": "9. Create/View/Archive Program (by Organizational Super Admin & Organizational Admin)"},
         {"name": "10. Invite/Undo Invite (by Organizational Super Admin & Organizational Admin)"},
-        {"name": "11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"},
+        {"name": "11. Accept/Reject/View Invite (by other Organizational Super Admin & other Organizational Admin)"},
+        {"name": "12. View/Leave Associated Programs (by other Organizational Super Admin & other Organizational Admin)"}
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default

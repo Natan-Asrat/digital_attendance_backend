@@ -212,7 +212,7 @@ undo_invite_organization_schema = extend_schema(
 accept_invite_schema = extend_schema(
     summary="Accept Invite",
     description="Accepts the organization invite and creates an active `InvitedOrganizationProgram` instance.",
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["11. Accept/Reject/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
     request=None,
     responses={
         200: ProgramInviteSerializer,
@@ -246,7 +246,7 @@ accept_invite_schema = extend_schema(
 reject_invite_schema = extend_schema(
     summary="Reject Invite",
     description="Rejects the organization invite and updates `InvitedOrganizationProgram` if it exists.",
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["11. Accept/Reject/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
     request=None,
     responses={
         200: ProgramInviteSerializer,
@@ -277,7 +277,7 @@ list_program_invites_schema = extend_schema(
     description=(
         "Lists all invites sent by a program to organizations.\n\n"
     ),
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["11. Accept/Reject/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
     responses={
         200: ProgramInviteSerializer(many=True),
         404: inline_serializer(
@@ -292,7 +292,7 @@ list_organizations_invites_schema = extend_schema(
     description=(
         "Lists all invites sent to join programs to a specific organization.\n\n"
     ),
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["11. Accept/Reject/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
     responses={
         200: ProgramInviteSerializer(many=True),
         404: inline_serializer(
@@ -302,10 +302,12 @@ list_organizations_invites_schema = extend_schema(
     }
 )
 
+# 12
+
 leave_program_schema = extend_schema(
     summary="Leave Program",
     description="Leaves the specified program.",
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["12. View/Leave Associated Programs (by other Organizational Super Admin & other Organizational Admin)"],
     request=None,
     responses={
         200: InvitedOrganizationProgramSerializer,
@@ -337,7 +339,7 @@ list_organization_invited_programs_schema = extend_schema(
     description=(
         "Lists all programs invited and accepted to the specified organization. (Has more detail than /programs/associated_programs/ with details on who accepted, rejected, removed invite... for administrative purposes)\n\n"
     ),
-    tags=["11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"],
+    tags=["12. View/Leave Associated Programs (by other Organizational Super Admin & other Organizational Admin)"],
     responses={
         200: InvitedOrganizationProgramAdminSerializer(many=True),
         404: inline_serializer(
