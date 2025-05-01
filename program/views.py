@@ -294,7 +294,7 @@ class ProgramViewset(GenericViewSet):
         if not program.is_active:
             return Response({"error": "Program is archived."}, status=status.HTTP_400_BAD_REQUEST)
         program_admins = ProgramEventAdmin.objects.filter(program=program).select_related(
-            'user', 'added_by', 'removed_by', 'program'
+            'user', 'added_by', 'removed_by', 'program', 'program__organization'
         )
         paginated_queryset = self.paginate_queryset(program_admins)
         if paginated_queryset is not None:
@@ -372,7 +372,7 @@ class NestedOrganizationProgramViewset(ListModelMixin, GenericViewSet):
     
     def get_queryset(self):
         organization_id = self.kwargs.get('organization_pk')
-        return Program.objects.filter(organization__id=organization_id)
+        return Program.objects.filter(organization__id=organization_id).select_related('organization', 'created_by', 'archived_by')
 
     @list_organization_associated_programs_schema
     @action(detail=False, methods=['get'])
@@ -382,7 +382,8 @@ class NestedOrganizationProgramViewset(ListModelMixin, GenericViewSet):
             organization = Organization.objects.get(id=organization_id)
             if not organization.is_active:
                 return Response({"error": "Organization is banned."}, status=status.HTTP_400_BAD_REQUEST)
-            programs = Program.objects.filter(invited_programs__organization=organization)
+            programs = Program.objects.filter(invited_programs__organization=organization).select_related('organization', 'created_by', 'archived_by')
+            print("ooo")
             paginated_queryset = self.paginate_queryset(programs)
             if paginated_queryset is not None:
                 serializer = self.get_serializer(paginated_queryset, many=True)
@@ -487,7 +488,11 @@ class NestedProgramInviteViewset(ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         program_id = self.kwargs.get('program_pk')
-        return ProgramInvite.objects.filter(program__id=program_id)
+        return ProgramInvite.objects.filter(program__id=program_id).select_related(
+            'program', 'program__organization',
+            'organization',
+            'invited_by', 'accepted_by', 'rejected_by', 'removed_by'
+        )
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated and self.request.user.is_staff:
@@ -507,7 +512,11 @@ class NestedOrganizationInviteViewset(ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         organization_id = self.kwargs.get('organization_pk')
-        return ProgramInvite.objects.filter(organization__id=organization_id)
+        return ProgramInvite.objects.filter(organization__id=organization_id).select_related(
+            'program', 'program__organization',
+            'organization',
+            'invited_by', 'accepted_by', 'rejected_by', 'removed_by'
+        )
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated and self.request.user.is_staff:
@@ -556,4 +565,8 @@ class NestedOrganizationAssociatedProgramViewset(ListModelMixin, GenericViewSet)
     
     def get_queryset(self):
         organization_id = self.kwargs.get('organization_pk')
-        return InvitedOrganizationProgram.objects.filter(organization__id=organization_id)
+        return InvitedOrganizationProgram.objects.filter(organization__id=organization_id).select_related(
+            'program', 'program__organization',
+            'invite', 'invite__organization', 'invite__program', 'invite__program__organization',
+            'accepted_by', 'organization'
+        )
