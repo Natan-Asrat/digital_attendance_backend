@@ -9,7 +9,7 @@ from .views import (
     NestedOrganizationAssociatedProgramViewset,
     NestedOrganizationInviteViewset
 )
-from organization.views import OrganizationViewset
+from organization.views import OrganizationSimpleViewset
 from rest_framework_nested import routers
 
 router = DefaultRouter()
@@ -20,7 +20,7 @@ program_router.register(r'invites', NestedProgramInviteViewset, basename='progra
 router.register(r'program_invites', ProgramInviteViewset)
 router.register(r'associated_programs_organizations', ProgramInvitedOrganizationViewset)
 
-router.register(r'organizations', OrganizationViewset, basename='organization')
+router.register(r'organizations', OrganizationSimpleViewset, basename='organization')
 organizations_router = routers.NestedDefaultRouter(router, r'organizations', lookup='organization')
 organizations_router.register(r'programs', NestedOrganizationProgramViewset, basename='organization-programs')
 organizations_router.register(r'invites', NestedOrganizationInviteViewset, basename='organization-invites')

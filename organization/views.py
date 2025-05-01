@@ -33,6 +33,14 @@ from .serializers import (
 from .pagination import CustomPageNumberPagination
 
 # Create your views here.
+
+class OrganizationSimpleViewset(GenericViewSet):
+    serializer_class = OrganizationSerializer
+    queryset = Organization.objects.all()
+    permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+
 class OrganizationViewset(GenericViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
