@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from organization.serializers import OrganizationSerializer
-from .models import Program, ProgramInvite, InvitedOrganizationProgram
+from .models import Program, ProgramInvite, InvitedOrganizationProgram, ProgramSubscriber
 from account.serializers import UserSerializer
 
 class ProgramSerializer(ModelSerializer):
@@ -59,3 +59,18 @@ class InvitedOrganizationProgramAdminSerializer(ModelSerializer):
     class Meta:
         model = InvitedOrganizationProgram
         fields = '__all__'
+
+
+class ProgramSubscriberGetProgsSerializer(ModelSerializer):
+    program = ProgramSerializer()
+    class Meta:
+        model = ProgramSubscriber
+        fields = '__all__'
+
+
+class ProgramSubscriberGetSubsSerializer(ModelSerializer):
+    subscriber = UserSerializer()
+    class Meta:
+        model = ProgramSubscriber
+        fields = '__all__'
+    

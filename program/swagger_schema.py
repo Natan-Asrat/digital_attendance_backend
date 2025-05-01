@@ -4,7 +4,9 @@ from .serializers import (
     ProgramSerializer, 
     InvitedOrganizationProgramAdminSerializer,
     ProgramInviteSerializer,
-    InvitedOrganizationProgramSerializer
+    InvitedOrganizationProgramSerializer,
+    ProgramSubscriberGetSubsSerializer,
+    ProgramSubscriberGetProgsSerializer
 )
 
 from rest_framework import serializers
@@ -349,3 +351,148 @@ list_organization_invited_programs_schema = extend_schema(
     }
 )
 
+# 13
+
+subscribe_program_schema = extend_schema(
+    summary="Subscribe to Program",
+    description="Subscribes the authenticated user to the specified program. If a previous subscription existed but was inactive, it will be reactivated.",
+    tags=["13. Subscribe/Unsubscribe/View to Program (by User)"],
+    request=None,
+    responses={
+        201: OpenApiResponse(
+            description="Successfully subscribed to the program.",
+            response=inline_serializer(
+                name="ProgramSubscriptionSuccess",
+                fields={"message": serializers.CharField()}
+            ),
+            examples=[
+                OpenApiExample(
+                    name="New Subscription",
+                    value={"message": "Successfully subscribed to the program."},
+                    response_only=True,
+                    status_codes=["201"]
+                )
+            ]
+        ),
+        200: OpenApiResponse(
+            description="Subscription reactivated successfully.",
+            response=inline_serializer(
+                name="ProgramSubscriptionReactivated",
+                fields={"message": serializers.CharField()}
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Reactivated Subscription",
+                    value={"message": "Subscription reactivated successfully."},
+                    response_only=True,
+                    status_codes=["200"]
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="ProgramSubscriptionBadRequest",
+                fields={"error": serializers.CharField()}
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Already Subscribed",
+                    value={"error": "Already subscribed to this program."},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Archived Program",
+                    value={"error": "Program is already archived."},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+            ]
+        )
+    }
+)
+
+unsubscribe_program_schema = extend_schema(
+    summary="Unsubscribe from Program",
+    description="Unsubscribes the authenticated user from the specified program if currently subscribed.",
+    tags=["13. Subscribe/Unsubscribe/View to Program (by User)"],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description="Successfully unsubscribed from the program.",
+            response=inline_serializer(
+                name="ProgramUnsubscribeSuccess",
+                fields={"message": serializers.CharField()}
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Successful Unsubscribe",
+                    value={"message": "Successfully unsubscribed from the program."},
+                    response_only=True,
+                    status_codes=["200"]
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=inline_serializer(
+                name="ProgramUnsubscribeBadRequest",
+                fields={"error": serializers.CharField()}
+            ),
+            examples=[
+                OpenApiExample(
+                    name="Not Subscribed",
+                    value={"error": "You are not subscribed to this program or have unsubscribed."},
+                    response_only=True,
+                    status_codes=["400"]
+                ),
+                OpenApiExample(
+                    name="Archived Program",
+                    value={"error": "Program is archived."},
+                    response_only=True,
+                    status_codes=["400"]
+                )
+            ]
+        )
+    }
+)
+
+my_subscribed_programs_schema = extend_schema(
+    summary="My Subscribed Programs",
+    description="Returns a list of programs the authenticated user is currently subscribed to.",
+    tags=["13. Subscribe/Unsubscribe/View to Program (by User)"],
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            description="List of subscribed programs.",
+            response=ProgramSubscriberGetProgsSerializer(many=True)
+        )
+    }
+)
+
+# 14
+
+list_subscribers_in_program_schema = extend_schema(
+    summary="List Subscribers of a Program",
+    description="Returns a paginated list of active subscribers for the specified program.",
+    tags=["14. Subscribers in Program (by O. S. Admins, O. Admins, Event Admins & Event Organizers with permission)"],
+    responses={
+        200: OpenApiResponse(
+            description="List of active subscribers.",
+            response=ProgramSubscriberGetSubsSerializer(many=True)
+        )
+    }
+)
+
+list_subscribed_programs_schema = extend_schema(
+    summary="List Subscribed Programs of a User",
+    description="Returns a paginated list of active programs a specific user has subscribed to.",
+    tags=["15. Subscribed Programs of a User (by Staff)"],
+    responses={
+        200: OpenApiResponse(
+            description="List of active subscribed programs.",
+            response=ProgramSubscriberGetProgsSerializer(many=True)
+        )
+    }
+)

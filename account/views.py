@@ -11,6 +11,10 @@ from .swagger_schema import (
     create_schema, email_login_schema, phone_login_schema
 )
 
+class UserSimpleViewset(viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer

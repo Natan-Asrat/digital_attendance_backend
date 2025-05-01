@@ -8,7 +8,9 @@ from .serializers import (
     ProgramInviteSerializer,
     ProgramInviteAdminSerializer,
     InvitedOrganizationProgramSerializer,
-    InvitedOrganizationProgramAdminSerializer
+    InvitedOrganizationProgramAdminSerializer,
+    ProgramSubscriberGetSubsSerializer,
+    ProgramSubscriberGetProgsSerializer
 )
 from .swagger_schema import (
     create_program_schema,
@@ -22,7 +24,12 @@ from .swagger_schema import (
     reject_invite_schema,
     list_program_invites_schema,
     list_organizations_invites_schema,
-    leave_program_schema
+    leave_program_schema,
+    subscribe_program_schema,
+    unsubscribe_program_schema,
+    my_subscribed_programs_schema,
+    list_subscribers_in_program_schema,
+    list_subscribed_programs_schema
 )
 from .pagination import CustomPageNumberPagination
 from rest_framework.permissions import AllowAny
@@ -79,6 +86,69 @@ class ProgramViewset(GenericViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @subscribe_program_schema
+    @action(detail=True, methods=['post'])
+    def subscribe(self, request, pk=None):
+        program = self.get_object()
+        if not program.is_active:
+            return Response({"error": "Program is already archived."}, status=status.HTTP_400_BAD_REQUEST)
+        existing_subscription = ProgramSubscriber.objects.filter(
+            program=program,
+            subscriber=request.user
+        ).first()
+
+        if existing_subscription:
+            if existing_subscription.is_active:
+                return Response({"error": "Already subscribed to this program."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Reactivate the previous subscription
+                existing_subscription.is_active = True
+                existing_subscription.unsubscribed_at = None
+                existing_subscription.subscribed_at = timezone.now()
+                existing_subscription.save()
+                return Response({"message": "Subscription reactivated successfully."}, status=status.HTTP_200_OK)
+    
+        ProgramSubscriber.objects.create(
+            program=program,
+            subscriber=request.user,
+            subscribed_at=timezone.now()
+        )
+        return Response({"message": "Successfully subscribed to the program."}, status=status.HTTP_201_CREATED)
+        
+    @unsubscribe_program_schema
+    @action(detail=True, methods=['post'])
+    def unsubscribe(self, request, pk=None):
+        program = self.get_object()
+        if not program.is_active:
+            return Response({"error": "Program is already archived."}, status=status.HTTP_400_BAD_REQUEST)
+
+        subscription = ProgramSubscriber.objects.filter(
+            program=program,
+            subscriber=request.user,
+            is_active=True
+        ).first()
+
+        if not subscription:
+            return Response({"error": "You are not subscribed to this program."}, status=status.HTTP_400_BAD_REQUEST)
+
+        subscription.is_active = False
+        subscription.unsubscribed_at = timezone.now()
+        subscription.save()
+
+        return Response({"message": "Successfully unsubscribed from the program."}, status=status.HTTP_200_OK)
+        
+    @my_subscribed_programs_schema
+    @action(detail=False, methods=['get'])
+    def my_subscribed_programs(self, request, *args, **kwargs):
+        subscriptions = ProgramSubscriber.objects.filter(subscriber=request.user, is_active=True).select_related('program', 'program__organization')
+        paginated_queryset = self.paginate_queryset(subscriptions)
+        if paginated_queryset is not None:
+            serializer = ProgramSubscriberGetProgsSerializer(paginated_queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProgramSubscriberGetProgsSerializer(subscriptions, many=True)
+        return Response(serializer.data)
+
     @archive_program_schema
     @action(detail=True, methods=['post'])
     def archive_program(self, request, pk=None):
@@ -90,6 +160,35 @@ class ProgramViewset(GenericViewSet):
         program.archived_at = timezone.now()
         program.save()
         return Response(ProgramSerializer(program).data, status=status.HTTP_200_OK)
+
+class NestedSubscribersViewset(ListModelMixin, GenericViewSet):
+    queryset = ProgramSubscriber.objects.none()
+    serializer_class = ProgramSubscriberGetSubsSerializer
+    permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    @list_subscribers_in_program_schema
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_pk')
+        return ProgramSubscriber.objects.filter(program__id=program_id, is_active=True).select_related('subscriber')
+
+
+class NestedSubscribedProgramsViewset(ListModelMixin, GenericViewSet):
+    queryset = ProgramSubscriber.objects.none()
+    serializer_class = ProgramSubscriberGetProgsSerializer
+    permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    @list_subscribed_programs_schema
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        subscriber_id = self.kwargs.get('subscriber_pk')
+        return ProgramSubscriber.objects.filter(subscriber__id=subscriber_id, is_active=True).select_related('program', 'program__organization')
 
 
 class NestedOrganizationProgramViewset(ListModelMixin, GenericViewSet):
