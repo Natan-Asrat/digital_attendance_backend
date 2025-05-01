@@ -16,8 +16,10 @@ INSTALLED_APPS = [
     ##
     "account",
     "organization",
+    "program",
     ##
     "rest_framework",
+    "rest_framework_nested",
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
@@ -104,6 +106,9 @@ SPECTACULAR_SETTINGS = {
         {"name": "6. Assign/Revoke Organizational Admin (by Organizational Super Admin & Organizational Admin)"},
         {"name": "7. View Organizational Admins in a specific Organization (by Organizational Super Admin & Organizational Admin)"},
         {"name": "8. Update Organizational Admin (by Organizational Super Admin)"},
+        {"name": "9. Create/View/Archive Program (by Organizational Super Admin & Organizational Admin)"},
+        {"name": "10. Invite/Undo Invite (by Organizational Super Admin & Organizational Admin)"},
+        {"name": "11. Accept/Reject/Leave/View Invite (by other Organizational Super Admin & other Organizational Admin)"},
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default

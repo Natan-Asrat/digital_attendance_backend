@@ -10,3 +10,4 @@ python-dotenv==1.0.1
 tensorflow==2.19.0
 scikit-learn==1.6.1
 pillow==11.0.0
+drf-nested-routers==0.94.1
