@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "account",
     "organization",
     "program",
+    "event",
     ##
     "rest_framework",
     "rest_framework_nested",
@@ -115,7 +116,14 @@ SPECTACULAR_SETTINGS = {
         {"name": "15. Subscribed Programs of a User (by Staff)"},
         {"name": "16. Assign/Revoke Program Event Admin (by Organizational Admin & Organizational Super Admin)"},
         {"name": "17. View Program Event Admins in a specific Program (by Program Admin & Organizational Admin & Organizational Super Admin)"},
-        {"name": "18. Update Program Event Admin (by Organizational Admin & Organizational Super Admin)"}
+        {"name": "18. Update Program Event Admin (by Organizational Admin & Organizational Super Admin)"},
+        {"name": "19. Create/View/Conclude/Archive/Reactivate Event (by Program Event Admin & Organizational Admin & Organizational Super Admin)"},
+        {"name": "20. Get Event by Short Code (by Attendee)"},
+        {"name": "21. Create Attendance (by Attendee)"},
+        {"name": "22. List Attendances (by Attendee)"},
+        {"name": "23. Update Display Name (by Attendee)"},
+        {"name": "24. Get Event Attendees (by Program Event Admin & Organizational Admin & Organizational Super Admin)"},
+        {"name": "25. Invalidate/Revalidate Attendance (by Program Event Admin & Organizational Admin & Organizational Super Admin)"},
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default

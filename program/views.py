@@ -50,6 +50,13 @@ from account.models import User
 from django.utils import timezone
 
 # Create your views here.
+class ProgramSimpleViewset(GenericViewSet):
+    serializer_class = ProgramSerializer
+    queryset = Program.objects.all()
+    permission_classes = [AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+
 class ProgramViewset(GenericViewSet):
     serializer_class = ProgramSerializer
     queryset = Program.objects.all()
