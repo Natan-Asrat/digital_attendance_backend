@@ -9,6 +9,7 @@ urlpatterns = [
     path("digital_attendance/api/organization/", include("organization.urls")),
     path("digital_attendance/api/program/", include("program.urls")),
     path("digital_attendance/api/event/", include("event.urls")),
+    path("digital_attendance/api/roles/", include("roles.urls")),
     path('digital_attendance/api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('digital_attendance/api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]

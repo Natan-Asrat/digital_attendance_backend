@@ -56,3 +56,14 @@ class UserCreateSerializer(serializers.Serializer):
         )
         
         return user
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    banned_by = UserSerializer()
+    unbanned_by = UserSerializer()
+    granted_organizational_permission_by = UserSerializer()
+    revoked_organizational_permission_by = UserSerializer()
+    granted_staff_status_by = UserSerializer()
+    revoked_staff_status_by = UserSerializer()
+    class Meta:
+        model = User
+        fields = '__all__'
