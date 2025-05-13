@@ -10,6 +10,14 @@ class ProgramSerializer(ModelSerializer):
         model = Program
         fields = ['id', 'name', 'organization', 'is_active', 'created_at']
 
+class ProgramListNestedSerializer(ModelSerializer):
+    organization = OrganizationSerializer()
+    created_by = UserSerializer()
+    archived_by = UserSerializer()
+    class Meta:
+        model = Program
+        fields = ['id', 'name', 'organization', 'is_active', 'created_at', 'created_by', 'archived_by', 'archived_at']
+
 class ProgramAdminSerializer(ModelSerializer):
     created_by = UserSerializer()
     archived_by = UserSerializer()

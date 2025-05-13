@@ -13,7 +13,8 @@ from .serializers import (
     ProgramSubscriberGetProgsSerializer,
     AssignProgramEventAdminSerializer,
     PatchProgramEventAdminSerializer,
-    ProgramEventAdmin_AdminSerializer
+    ProgramEventAdmin_AdminSerializer,
+    ProgramListNestedSerializer
 )
 from .swagger_schema import (
     create_program_schema,
@@ -368,7 +369,7 @@ class NestedOrganizationProgramViewset(ListModelMixin, GenericViewSet):
     def get_serializer_class(self):
         if self.request.user.is_authenticated and self.request.user.is_staff:
             return ProgramAdminSerializer
-        return ProgramSerializer
+        return ProgramListNestedSerializer
     
     def get_queryset(self):
         organization_id = self.kwargs.get('organization_pk')
