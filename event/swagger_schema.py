@@ -287,8 +287,9 @@ create_attendance_schema = extend_schema(
                     'type': 'string',
                     'description': 'Display name of the attendee i.e. ID of attendee in organization.'
                 },
+                "signature_base64": {"type": "string", "example": "data:image/png;base64,iVBO..."},
             },
-            'required': ['display_name']
+            'required': ['display_name', "signature_base64"]
         }
     },
     responses={
