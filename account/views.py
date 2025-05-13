@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .swagger_schema import (
     create_schema, email_login_schema, phone_login_schema
 )
+from django.conf import settings
 
 class UserSimpleViewset(viewsets.GenericViewSet):
     queryset = User.objects.all()
@@ -55,7 +56,7 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
             print("Signature similarity:", similarity)
 
             # If similarity is greater than 50%, authenticate user and issue tokens
-            if similarity >= 0.5:
+            if similarity >= settings.SIGNATURE_THRESHOLD:
                 # Generate access and refresh tokens
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
@@ -91,7 +92,7 @@ class UserViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
             print("Signature similarity:", similarity)
 
             # If similarity is greater than 50%, authenticate user and issue tokens
-            if similarity >= 0.5:
+            if similarity >= settings.SIGNATURE_THRESHOLD:
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
 

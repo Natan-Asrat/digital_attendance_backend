@@ -14,6 +14,8 @@ from program.serializers import ProgramSerializer
 from django.db.models import Q
 from organization.models import Organization
 from organization.serializers import OrganizationSerializer
+from account.utils import calculate_signature_similarity
+from django.conf import settings
 from .swagger_schema import (
     create_event_schema,
     list_program_events_schema,
@@ -221,6 +223,22 @@ class NestedAttendanceViewset(ListModelMixin,CreateModelMixin, GenericViewSet):
     @create_attendance_schema
     def create(self, request, *args, **kwargs):
         event_id = self.kwargs.get('event_pk')
+        signature_base64 = request.data.get('signature_base64')
+        user = request.user
+        if user is None or not user.is_authenticated or user.signaturebase64 is None:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check the signature similarity
+        base64_existing_signature = user.signaturebase64
+        if signature_base64 and base64_existing_signature:
+            similarity = calculate_signature_similarity(signature_base64, base64_existing_signature)
+            print("Signature similarity:", similarity)
+
+            # If similarity is greater than 50%, authenticate user and issue tokens
+            if similarity < settings.SIGNATURE_THRESHOLD:
+                return Response({
+                    "error": "Signature mismatch. Please try again!"
+                }, status=status.HTTP_400_BAD_REQUEST)
         try:
             event = Event.objects.get(id=event_id)
             if event.is_archived:
