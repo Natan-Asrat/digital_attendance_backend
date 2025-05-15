@@ -17,6 +17,20 @@ create_schema = extend_schema(
             ),
             examples=[
                 OpenApiExample(
+                    name="Error - Phone already exists",
+                    description="The provided phone number is already registered",
+                    value={
+                        "phone": ["This phone number is already in use."]
+                    }
+                ),
+                OpenApiExample(
+                    name="Error - Email already exists",
+                    description="The provided email is already registered",
+                    value={
+                        "email": ["This email is already in use."]
+                    }
+                ),
+                OpenApiExample(
                     name="Error - Invalid input",
                     description="Invalid input provided",
                     value={
