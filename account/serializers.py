@@ -15,6 +15,16 @@ class UserCreateSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     signature_base64 = serializers.CharField(required=True)
     signature_stroke = serializers.JSONField(required=False, allow_null=True)
+    
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value
+
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("This phone number is already in use.")
+        return value
 
     def validate_signature_base64(self, value):
         """Validate if the base64 string is a valid image."""
