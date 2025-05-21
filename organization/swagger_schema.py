@@ -459,7 +459,7 @@ view_all_organizations_schema = extend_schema(
             "previous": serializers.CharField(allow_null=True),
             "results": serializers.ListField(
                 child=inline_serializer(
-                    name="OrganizationAdminItem",
+                    name="OrganizationAdminAllItem",
                     fields={
                         "id": serializers.UUIDField(),
                         "code": serializers.CharField(),
@@ -488,7 +488,7 @@ view_active_organizations_schema = extend_schema(
             "previous": serializers.CharField(allow_null=True),
             "results": serializers.ListField(
                 child=inline_serializer(
-                    name="OrganizationAdminItem",
+                    name="OrganizationAdminActiveItem",
                     fields={
                         "id": serializers.UUIDField(),
                         "code": serializers.CharField(),
@@ -517,7 +517,7 @@ view_archived_organizations_schema = extend_schema(
             "previous": serializers.CharField(allow_null=True),
             "results": serializers.ListField(
                 child=inline_serializer(
-                    name="OrganizationAdminItem",
+                    name="OrganizationAdminArchivedItem",
                     fields={
                         "id": serializers.UUIDField(),
                         "code": serializers.CharField(),
@@ -1035,4 +1035,30 @@ update_organization_admin_schema = extend_schema(
     summary="Update User as an Organizational Admin in a specific Organization.",
     description="Updates a user as an organizational admin if the user is active, and hasn't been revoked permission. Only send what you need to change since this is a PATCH request.",
     tags=["8. Update Organizational Admin (by Organizational Super Admin)"]
+)
+
+#27
+list_organizations_schema = extend_schema(
+    responses=inline_serializer(
+        name="ListAllOrganizationsCreated",
+        fields={
+            "count": serializers.IntegerField(),
+            "next": serializers.CharField(allow_null=True),
+            "previous": serializers.CharField(allow_null=True),
+            "results": serializers.ListField(
+                child=inline_serializer(
+                    name="OrganizationItem",
+                    fields={
+                        "id": serializers.UUIDField(),
+                        "code": serializers.CharField(),
+                        "name": serializers.CharField(),
+                        "is_active": serializers.BooleanField(),
+                    }
+                )
+            )
+        }
+    ),
+    summary="View All Organizations",
+    description="Retrieves a paginated list of all organizations (any user, or unauthenticated).",
+    tags=["27. List Organizations (by any - no authentication required)"],
 )

@@ -62,7 +62,7 @@ email_login_schema = extend_schema(
         200: OpenApiResponse(
             description="Success",
             response=inline_serializer(
-                name="RegisterSuccess",
+                name="EmailLoginSuccess",
                 fields={
                     "message": serializers.CharField(
                         help_text="Returns access and refresh token."
@@ -131,7 +131,7 @@ phone_login_schema = extend_schema(
         200: OpenApiResponse(
             description="Success",
             response=inline_serializer(
-                name="RegisterSuccess",
+                name="PhoneLoginSuccess",
                 fields={
                     "message": serializers.CharField(
                         help_text="Returns access and refresh token."

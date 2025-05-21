@@ -167,11 +167,11 @@ conclude_event_schema = extend_schema(
             ]
         ),
         403: inline_serializer(
-            name="ArchiveEvent403",
+            name="ConcludeEvent403",
             fields={"detail": serializers.CharField(default="You do not have permission to perform this action.")}
         ),
         404: inline_serializer(
-            name="ArchiveEvent404",
+            name="ConcludeEvent404",
             fields={"detail": serializers.CharField(default="No Event matches the given query.")}
         ),
     }
@@ -316,7 +316,7 @@ create_attendance_schema = extend_schema(
         404: OpenApiResponse(
             description="Event not found.",
             response=inline_serializer(
-                name="CreateEventNotFound",
+                name="CreateAttendanceNotFound",
                 fields={
                     "detail": serializers.CharField()
                 }

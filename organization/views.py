@@ -1,5 +1,6 @@
 from rest_framework.viewsets import GenericViewSet
 from .models import Organization, OrganizationAdmin
+from rest_framework.mixins import ListModelMixin
 from .serializers import OrganizationSerializer
 from rest_framework.decorators import action
 from account.models import User
@@ -8,6 +9,7 @@ from rest_framework import status
 from django.utils import timezone
 from rest_framework.permissions import AllowAny
 from .swagger_schema import (
+    list_organizations_schema,
     assign_organization_super_admin_schema, 
     revoke_organization_super_admin_schema, 
     assign_staff_schema, revoke_staff_schema,
@@ -41,11 +43,15 @@ class OrganizationSimpleViewset(GenericViewSet):
     pagination_class = CustomPageNumberPagination
 
 
-class OrganizationViewset(GenericViewSet):
+class OrganizationViewset(ListModelMixin, GenericViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
     permission_classes = [AllowAny]
     pagination_class = CustomPageNumberPagination
+
+    @list_organizations_schema
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_serializer_class(self):
         if self.action in ['view_all_organizations', 'view_active_organizations', 'view_archived_organizations']:
@@ -206,7 +212,7 @@ class OrganizationViewset(GenericViewSet):
         return Response(serializer.data)
     
     @get_user_organizations_schema
-    @action(detail=True, methods=['get'])
+    @action(detail=False, methods=['get'])
     def get_user_organizations(self, request, *args, **kwargs):
         try:
             email = request.query_params.get('email')

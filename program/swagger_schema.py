@@ -151,7 +151,7 @@ list_organization_associated_programs_schema = extend_schema(
     responses={
         200: ProgramAdminSerializer(many=True),
         404: inline_serializer(
-            name="ListOrganizationPrograms404",
+            name="ListOrganizationAssociatedPrograms404",
             fields={"detail": serializers.CharField(default="No Organization matches the given query.")}
         ),
     }
@@ -301,7 +301,7 @@ list_organizations_invites_schema = extend_schema(
     responses={
         200: ProgramInviteSerializer(many=True),
         404: inline_serializer(
-            name="ListProgramInvites404",
+            name="ListOrgInvites404",
             fields={"detail": serializers.CharField(default="No Organization matches the given query.")}
         ),
     }
@@ -348,7 +348,7 @@ list_organization_invited_programs_schema = extend_schema(
     responses={
         200: InvitedOrganizationProgramAdminSerializer(many=True),
         404: inline_serializer(
-            name="ListOrganizationPrograms404",
+            name="ListOrganizationInvited404",
             fields={"detail": serializers.CharField(default="No Organization matches the given query.")}
         ),
     }
