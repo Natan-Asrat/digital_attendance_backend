@@ -125,6 +125,7 @@ SPECTACULAR_SETTINGS = {
         {"name": "24. Get Event Attendees (by Program Event Admin & Organizational Admin & Organizational Super Admin)"},
         {"name": "25. Invalidate/Revalidate Attendance (by Program Event Admin & Organizational Admin & Organizational Super Admin)"},
         {"name": "26. My Roles"},
+        {"name": "27. List Organizations (by any - no authentication required)"},
     ],
     'SWAGGER_UI_SETTINGS': {
         'docExpansion': 'none',  # Collapses all sections by default
