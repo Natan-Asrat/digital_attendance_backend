@@ -106,6 +106,10 @@ class NestedEventViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
             return EventAdminSerializer
         return EventSerializer
     
+    def get_queryset(self):
+        program_id = self.kwargs.get('program_pk')
+        return self.queryset.filter(program__id=program_id)
+    
     @create_event_schema
     def create(self, request, *args, **kwargs):
         program_id = self.kwargs.get('program_pk')
@@ -219,6 +223,10 @@ class NestedAttendanceViewset(ListModelMixin,CreateModelMixin, GenericViewSet):
         if self.request.user.is_authenticated and self.request.user.is_staff:
             return AttendanceAdminSerializer
         return AttendanceSerializer
+    
+    def get_queryset(self):
+        event_id = self.kwargs.get('event_pk')
+        return self.queryset.filter(event__id=event_id)
     
     @create_attendance_schema
     def create(self, request, *args, **kwargs):
