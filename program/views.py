@@ -49,6 +49,15 @@ from rest_framework import status
 from organization.models import Organization
 from account.models import User
 from django.utils import timezone
+from .permissions import (
+    ProgramViewsetPermissions,
+    ProgramInviteViewsetPermissions,
+    ProgramInvitedOrganizationViewsetPermissions,
+    NestedOrganizationInviteViewsetPermissions,
+    NestedSubscribersViewsetPermissions,
+    NestedSubscribedProgramsViewsetPermissions,
+    NestedProgramInviteViewsetPermissions,
+)
 
 # Create your views here.
 class ProgramSimpleViewset(GenericViewSet):
@@ -61,7 +70,7 @@ class ProgramSimpleViewset(GenericViewSet):
 class ProgramViewset(GenericViewSet):
     serializer_class = ProgramSerializer
     queryset = Program.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [ProgramViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @create_program_schema
@@ -329,7 +338,7 @@ class ProgramViewset(GenericViewSet):
 class NestedSubscribersViewset(ListModelMixin, GenericViewSet):
     queryset = ProgramSubscriber.objects.none()
     serializer_class = ProgramSubscriberGetSubsSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [NestedSubscribersViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_subscribers_in_program_schema
@@ -344,7 +353,7 @@ class NestedSubscribersViewset(ListModelMixin, GenericViewSet):
 class NestedSubscribedProgramsViewset(ListModelMixin, GenericViewSet):
     queryset = ProgramSubscriber.objects.none()
     serializer_class = ProgramSubscriberGetProgsSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [NestedSubscribedProgramsViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_subscribed_programs_schema
@@ -400,7 +409,7 @@ class NestedOrganizationProgramViewset(ListModelMixin, GenericViewSet):
 class ProgramInviteViewset(GenericViewSet):
     serializer_class = ProgramInviteSerializer
     queryset = ProgramInvite.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [ProgramInviteViewsetPermissions]
     pagination_class = CustomPageNumberPagination
     
     @undo_invite_organization_schema
@@ -480,7 +489,7 @@ class ProgramInviteViewset(GenericViewSet):
 class NestedProgramInviteViewset(ListModelMixin, GenericViewSet):
     serializer_class = ProgramInviteSerializer
     queryset = ProgramInvite.objects.none()
-    permission_classes = [AllowAny]
+    permission_classes = [NestedProgramInviteViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_program_invites_schema
@@ -504,7 +513,7 @@ class NestedProgramInviteViewset(ListModelMixin, GenericViewSet):
 class NestedOrganizationInviteViewset(ListModelMixin, GenericViewSet):
     serializer_class = ProgramInviteSerializer
     queryset = ProgramInvite.objects.none()
-    permission_classes = [AllowAny]
+    permission_classes = [NestedOrganizationInviteViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_organizations_invites_schema
@@ -528,7 +537,7 @@ class NestedOrganizationInviteViewset(ListModelMixin, GenericViewSet):
 class ProgramInvitedOrganizationViewset(GenericViewSet):
     serializer_class = InvitedOrganizationProgramSerializer
     queryset = InvitedOrganizationProgram.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [ProgramInvitedOrganizationViewsetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @leave_program_schema
