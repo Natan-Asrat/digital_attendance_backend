@@ -32,12 +32,18 @@ from .swagger_schema import (
     invalidate_attendance_schema,
     revalidate_attendance_schema
 )
+from .permissions import (
+    EventViewSetPermissions,
+    NestedEventViewSetPermissions,
+    AttendanceViewSetPermissions,
+    NestedAttendanceViewSetPermissions
+)
 
 # Create your views here.
 class EventViewSet(GenericViewSet):
     serializer_class = EventSerializer
     queryset = Event.objects.all().select_related('program', 'program__organization')
-    permission_classes = [AllowAny]
+    permission_classes = [EventViewSetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @get_event_by_short_code_schema
@@ -94,7 +100,7 @@ class EventViewSet(GenericViewSet):
 class NestedEventViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = EventSerializer
     queryset = Event.objects.all().select_related('program', 'program__organization')
-    permission_classes = [AllowAny]
+    permission_classes = [NestedEventViewSetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_program_events_schema
@@ -129,7 +135,7 @@ class NestedEventViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 class AttendanceViewset(GenericViewSet):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all().select_related('event', 'event__program', 'event__program__organization', 'attendee', 'validated_by', 'invalidated_by')
-    permission_classes = [AllowAny]
+    permission_classes = [AttendanceViewSetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_attended_programs_schema
@@ -212,7 +218,7 @@ class AttendanceViewset(GenericViewSet):
 class NestedAttendanceViewset(ListModelMixin,CreateModelMixin, GenericViewSet):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all().select_related('event', 'event__program', 'event__program__organization', 'attendee', 'validated_by', 'invalidated_by')
-    permission_classes = [AllowAny]
+    permission_classes = [NestedAttendanceViewSetPermissions]
     pagination_class = CustomPageNumberPagination
 
     @event_attendees_schema
