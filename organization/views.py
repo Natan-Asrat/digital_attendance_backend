@@ -33,6 +33,7 @@ from .serializers import (
     PatchOrganizationalAdminSerializer
 )
 from .pagination import CustomPageNumberPagination
+from .permissions import OrganizationPermissions
 
 # Create your views here.
 
@@ -46,7 +47,7 @@ class OrganizationSimpleViewset(GenericViewSet):
 class OrganizationViewset(ListModelMixin, GenericViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [OrganizationPermissions]
     pagination_class = CustomPageNumberPagination
 
     @list_organizations_schema
